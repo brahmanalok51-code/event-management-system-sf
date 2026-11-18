@@ -1,0 +1,30 @@
+.ticket-card {
+    background-color: #ffffff;
+    border-radius: 0.35rem;
+    min-height: 125px;
+}
+
+.qr-image {
+    width: 90px;
+    height: 90px;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.qr-placeholder {
+    width: 90px;
+    height: 90px;
+    border: 1px dashed #b0adab;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fafaf9;
+}
+
+.token-text {
+    font-family: monospace;
+    color: #014486;
+}

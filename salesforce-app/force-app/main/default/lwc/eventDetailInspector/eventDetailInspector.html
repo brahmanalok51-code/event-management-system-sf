@@ -1,0 +1,245 @@
+<template>
+    <lightning-card title={cardTitle} icon-name="standard:scan_card">
+        <template lwc:if={selectedEventId}>
+            <div slot="actions">
+                <lightning-button
+                    label="Refresh Sync"
+                    icon-name="utility:refresh"
+                    onclick={handleRefresh}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+                <lightning-button
+                    label="Open Event Record"
+                    variant="brand-outline"
+                    icon-name="utility:new_window"
+                    onclick={handleNavigateToEvent}>
+                </lightning-button>
+            </div>
+        </template>
+
+        <div class="slds-p-around_medium">
+            <template lwc:if={selectedEventId}>
+                <!-- Ticket Request Box -->
+                <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                    <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_small">
+                        <h3 class="slds-text-title_caps">Request Event Ticket (Admin Approval Required)</h3>
+                        <lightning-button-group>
+                            <lightning-button
+                                label="Existing Contact"
+                                variant={existingModeVariant}
+                                onclick={setExistingMode}>
+                            </lightning-button>
+                            <lightning-button
+                                label="+ New Attendee"
+                                variant={newModeVariant}
+                                onclick={setNewMode}>
+                            </lightning-button>
+                        </lightning-button-group>
+                    </div>
+
+                    <!-- Mode 1: Existing Contact -->
+                    <template lwc:if={isExistingMode}>
+                        <div class="slds-grid slds-gutters slds-wrap slds-grid_vertical-align-end">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_5-of-12">
+                                <lightning-record-picker
+                                    label="Select Contact"
+                                    placeholder="Search Contacts..."
+                                    object-api-name="Contact"
+                                    onchange={handleContactChange}>
+                                </lightning-record-picker>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12">
+                                <lightning-combobox
+                                    label="Ticket Tier"
+                                    value={selectedTier}
+                                    options={tierOptions}
+                                    onchange={handleTierChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                                <lightning-button
+                                    label="Request Ticket"
+                                    variant="brand"
+                                    icon-name="utility:add"
+                                    onclick={handleQuickRegister}
+                                    disabled={isRegistering}>
+                                </lightning-button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Mode 2: Walk-in New Attendee -->
+                    <template lwc:else>
+                        <div class="slds-grid slds-gutters slds-wrap slds-grid_vertical-align-end">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                                <lightning-input
+                                    label="First Name"
+                                    placeholder="e.g., Rahul"
+                                    value={firstName}
+                                    onchange={handleFirstNameChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                                <lightning-input
+                                    label="Last Name"
+                                    placeholder="e.g., Sharma"
+                                    required
+                                    value={lastName}
+                                    onchange={handleLastNameChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                                <lightning-input
+                                    type="email"
+                                    label="Email"
+                                    placeholder="rahul@example.com"
+                                    value={email}
+                                    onchange={handleEmailChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_3-of-12">
+                                <lightning-combobox
+                                    label="Ticket Tier"
+                                    value={selectedTier}
+                                    options={tierOptions}
+                                    onchange={handleTierChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-m-top_small slds-text-align_right">
+                                <lightning-button
+                                    label="Create Contact &amp; Request Ticket"
+                                    variant="brand"
+                                    icon-name="utility:adduser"
+                                    onclick={handleWalkInRegister}
+                                    disabled={isRegistering}>
+                                </lightning-button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Loading Spinner -->
+                <template lwc:if={isLoading}>
+                    <div class="slds-is-relative slds-p-vertical_large">
+                        <lightning-spinner alternative-text="Loading registrations" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+
+                <!-- Registrations & QR Pass Grid -->
+                <template lwc:else>
+                    <template lwc:if={hasRegistrations}>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <template for:each={decoratedRegistrations} for:item="reg">
+                                <div key={reg.Id} class="slds-col slds-size_1-of-1 slds-medium-size_6-of-12 slds-m-bottom_medium">
+                                    <div class="slds-box slds-box_x-small ticket-card">
+                                        <div class="slds-grid slds-grid_vertical-align-center">
+                                            <!-- Left: QR Code or Status Placeholder -->
+                                            <div class="slds-col slds-size_4-of-12 slds-align_absolute-center">
+                                                <template lwc:if={reg.QR_Code_Image_URL__c}>
+                                                    <img src={reg.QR_Code_Image_URL__c}
+                                                         alt="Ticket QR Code"
+                                                         class="qr-image" />
+                                                </template>
+                                                <template lwc:elseif={reg.isPending}>
+                                                    <div class="qr-placeholder slds-text-align_center slds-p-around_x-small">
+                                                        <lightning-icon icon-name="utility:clock" size="small" variant="warning"></lightning-icon>
+                                                        <p class="slds-text-body_small slds-m-top_xx-small">Awaiting Approval</p>
+                                                    </div>
+                                                </template>
+                                                <template lwc:elseif={reg.isCancelled}>
+                                                    <div class="qr-placeholder slds-text-align_center slds-p-around_x-small">
+                                                        <lightning-icon icon-name="utility:ban" size="small" variant="error"></lightning-icon>
+                                                        <p class="slds-text-body_small slds-m-top_xx-small">Cancelled</p>
+                                                    </div>
+                                                </template>
+                                                <template lwc:else>
+                                                    <div class="qr-placeholder slds-text-align_center slds-p-around_x-small">
+                                                        <lightning-icon icon-name="utility:sync" size="small"></lightning-icon>
+                                                        <p class="slds-text-body_small slds-m-top_xx-small">Syncing QR...</p>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Right: Attendee Info + Admin Controls -->
+                                            <div class="slds-col slds-size_8-of-12 slds-p-left_small">
+                                                <div class="slds-grid slds-grid_align-spread">
+                                                    <span class="slds-text-heading_small slds-truncate">{reg.attendeeName}</span>
+                                                    <span class={reg.statusBadgeClass}>{reg.Status__c}</span>
+                                                </div>
+                                                <p class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                                                    <strong>Reg #:</strong> {reg.Name} &bull; <strong>Tier:</strong> {reg.Ticket_Tier__c}
+                                                </p>
+                                                <p class="slds-text-body_small slds-m-top_xx-small token-text">
+                                                    <strong>Token:</strong> {reg.QR_Code_Token__c}
+                                                </p>
+
+                                              
+
+                                                <!-- Admin-Only Action Buttons -->
+                                                <template lwc:if={isAdmin}>
+                                                    <div class="slds-m-top_x-small">
+                                                        <template lwc:if={reg.isPending}>
+                                                            <lightning-button
+                                                                label="Approve &amp; Issue QR"
+                                                                variant="success"
+                                                                data-id={reg.Id}
+                                                                data-status="Confirmed"
+                                                                onclick={handleStatusAction}
+                                                                class="slds-m-right_x-small">
+                                                            </lightning-button>
+                                                            <lightning-button
+                                                                label="Reject"
+                                                                variant="destructive-text"
+                                                                data-id={reg.Id}
+                                                                data-status="Cancelled"
+                                                                onclick={handleStatusAction}>
+                                                            </lightning-button>
+                                                        </template>
+
+                                                        <template lwc:if={reg.isConfirmed}>
+                                                            <lightning-button
+                                                                label="Desk Check-In"
+                                                                variant="brand-outline"
+                                                                data-id={reg.Id}
+                                                                data-status="Attended"
+                                                                onclick={handleStatusAction}
+                                                                class="slds-m-right_x-small">
+                                                            </lightning-button>
+                                                            <lightning-button
+                                                                label="Cancel"
+                                                                variant="destructive-text"
+                                                                data-id={reg.Id}
+                                                                data-status="Cancelled"
+                                                                onclick={handleStatusAction}>
+                                                            </lightning-button>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:else>
+                        <div class="slds-align_absolute-center slds-p-vertical_large slds-text-color_weak">
+                            <p>No ticket requests for this event yet.</p>
+                        </div>
+                    </template>
+                </template>
+            </template>
+
+            <template lwc:else>
+                <div class="slds-align_absolute-center slds-p-vertical_xx-large slds-text-align_center slds-text-color_weak">
+                    <div>
+                        <lightning-icon icon-name="standard:event" size="large" class="slds-m-bottom_small"></lightning-icon>
+                        <h2 class="slds-text-heading_medium">Select an Event</h2>
+                        <p class="slds-m-top_x-small">Click any event on the left panel to manage ticket requests, QR passes, and check-ins.</p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>

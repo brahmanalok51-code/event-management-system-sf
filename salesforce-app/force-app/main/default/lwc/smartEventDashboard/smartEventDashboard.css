@@ -1,0 +1,15 @@
+.kpi-pill {
+    min-width: 110px;
+    background-color: #f3f3f3;
+}
+
+.search-reg-pill {
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: background-color 0.15s ease;
+}
+
+.search-reg-pill:hover {
+    background-color: #eef4ff;
+    border-color: #0176d3;
+}

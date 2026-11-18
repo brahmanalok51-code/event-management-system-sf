@@ -1,0 +1,16 @@
+.event-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-left: 4px solid transparent;
+    background-color: #ffffff;
+}
+
+.event-card:hover {
+    background-color: #f3f3f3;
+    transform: translateY(-1px);
+}
+
+.selected-card {
+    border-left: 4px solid #0176d3;
+    background-color: #eef4ff;
+}

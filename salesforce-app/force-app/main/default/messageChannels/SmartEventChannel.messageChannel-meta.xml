@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>SmartEventChannel</masterLabel>
+    <isExposed>true</isExposed>
+    <description>Message Channel to broadcast selected Smart Event ID across LWC components.</description>
+    <lightningMessageFields>
+        <fieldName>eventId</fieldName>
+        <description>Record ID of the selected Smart_Event__c</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>eventName</fieldName>
+        <description>Name of the selected Smart_Event__c</description>
+    </lightningMessageFields>
+</LightningMessageChannel>

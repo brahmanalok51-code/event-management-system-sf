@@ -1,0 +1,27 @@
+<template>
+    <div class="slds-box slds-theme_default slds-m-bottom_medium">
+        <div class="slds-grid slds-gutters slds-grid_vertical-align-end">
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12">
+                <lightning-input
+                    type="search"
+                    label="Global Smart Search (Events, Venues, Ticket Tokens, or Attendees)"
+                    placeholder="Type at least 2 characters (e.g., Summit, Greater Noida, TKT-...)..."
+                    value={searchTerm}
+                    onchange={handleInputChange}>
+                </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_4-of-12 slds-p-bottom_xx-small">
+                <lightning-button
+                    label="Clear Search"
+                    variant="neutral"
+                    icon-name="utility:close"
+                    onclick={handleClear}
+                    disabled={isClearDisabled}>
+                </lightning-button>
+                <template lwc:if={isSearching}>
+                    <lightning-spinner alternative-text="Searching" size="small" class="slds-m-left_medium"></lightning-spinner>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

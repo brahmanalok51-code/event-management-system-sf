@@ -1,0 +1,11 @@
+@"
+node_modules/
+**/node_modules/
+.env
+**/.env
+.sf/
+.sfdx/
+dist/
+coverage/
+*.log
+"@ | Out-File -Encoding utf8 .gitignore
